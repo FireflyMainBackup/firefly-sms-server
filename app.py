@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-TELNYX_API_KEY = os.environ.get('TELNYX_API_KEY', 'KEY019D69EF22A2B5E007DAF67F6AA3F13C_MXJ1bkBYKU5TruEeKdSrDJ')
+TELNYX_API_KEY = os.environ.get (TELNYX_API_KEY = os.environ.get('TELNYX_API_KEY', '')
 SUPABASE_URL = 'https://zlplaabcwduydbmrmown.supabase.co'
 SUPABASE_KEY = 'sb_publishable_JqAeQQRyRTxORy855Rv3ag_sdzYD6NR'
 

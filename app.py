@@ -6,48 +6,30 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-TELNYX_API_KEY = os.environ.get (TELNYX_API_KEY = os.environ.get('TELNYX_API_KEY', '')
-SUPABASE_URL = 'https://zlplaabcwduydbmrmown.supabase.co'
-SUPABASE_KEY = 'sb_publishable_JqAeQQRyRTxORy855Rv3ag_sdzYD6NR'
-
-@app.route('/send', methods=['POST'])
-def send_sms():
-    data = request.json
-    to = data.get('to')
-    text = data.get('text')
-    from_number = data.get('from', '+447822017856')
-    response = requests.post(
-        'https://api.telnyx.com/v2/messages',
-        headers={
-            'Authorization': 'Bearer ' + TELNYX_API_KEY,
-            'Content-Type': 'application/json'
-        },
-        json={'to': to, 'from': from_number, 'text': text}
-    )
-    return jsonify(response.json()), response.status_code
-
-@app.route('/receive', methods=['POST'])
-def receive_sms():
-    data = request.json
-    payload = data.get('data', {}).get('payload', {})
-    from_num = payload.get('from', {}).get('phone_number')
-    to_num = payload.get('to', [{}])[0].get('phone_number')
-    text = payload.get('text')
-    if from_num and text:
-        requests.post(
-            SUPABASE_URL + '/rest/v1/sms_messages',
-            headers={
-                'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                'Content-Type': 'application/json'
-            },
-            json={'from': from_num, 'to': to_num, 'text': text, 'direction': 'inbound'}
-        )
-    return jsonify({'status': 'ok'}), 200
-
 @app.route('/')
 def health():
-    return 'Firefly Hub SMS Server running', 200
+    return 'OK'
+
+@app.route('/send', methods=['POST', 'OPTIONS'])
+def send_sms():
+    if request.method == 'OPTIONS':
+        return '', 200
+    data = request.get_json()
+    key = os.environ.get('TELNYX_API_KEY', '')
+    resp = requests.post(
+        'https://api.telnyx.com/v2/messages',
+        headers={
+            'Authorization': 'Bearer ' + key,
+            'Content-Type': 'application/json'
+        },
+        json={
+            'to': data.get('to'),
+            'from': data.get('from'),
+            'text': data.get('text')
+        }
+    )
+    return jsonify(resp.json()), resp.status_code
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5001)))
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port)

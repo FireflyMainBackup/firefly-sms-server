@@ -16,18 +16,26 @@ def send_sms():
         return '', 200
     data = request.get_json()
     key = os.environ.get('TELNYX_API_KEY', '')
+    
+    to = data.get('to', '').replace(' ', '')
+    from_num = data.get('from', '').replace(' ', '')
+    text = data.get('text', '')
+    
+    if not to.startswith('+'):
+        to = '+' + to
+    if not from_num.startswith('+'):
+        from_num = '+' + from_num
+    
     resp = requests.post(
         'https://api.telnyx.com/v2/messages',
         headers={
             'Authorization': 'Bearer ' + key,
             'Content-Type': 'application/json'
         },
-        json={
-            'to': data.get('to'),
-            'from': data.get('from'),
-            'text': data.get('text')
-        }
+        json={'to': to, 'from': from_num, 'text': text}
     )
+    
+    print('Telnyx response: ' + str(resp.status_code) + ' - ' + resp.text)
     return jsonify(resp.json()), resp.status_code
 
 if __name__ == '__main__':
